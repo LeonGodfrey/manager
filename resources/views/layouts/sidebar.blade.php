@@ -24,7 +24,7 @@
             </a>
           </li>
           <li class="nav-item">
-            <a href="cash_book.php" class="nav-link">
+            <a href="{{route('reports.cashbook')}}" class="nav-link">
               <i class="nav-icon fas fa-book"></i>
               <p>
                 Cash Book

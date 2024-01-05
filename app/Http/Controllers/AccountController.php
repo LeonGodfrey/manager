@@ -147,7 +147,7 @@ class AccountController extends Controller
         }
 
         // Sort clients by updated_at in descending order
-        $accounts = $query->orderBy('updated_at', 'desc')->paginate(20);
+        $accounts = $query->orderBy('updated_at', 'desc')->paginate(25);
         return view('cash-accounts.index', compact('accounts', 'user', 'organization'));
     }
 
@@ -160,7 +160,7 @@ class AccountController extends Controller
         // Retrieve transactions associated with the cash account
         $transactions = Transaction::whereHas('details', function ($query) use ($account) {
             $query->where('account_id', $account->id);
-        })->orderBy('created_at', 'desc')->paginate(20);
+        })->orderBy('created_at', 'desc')->paginate(25);
 
         $details = [];
         foreach ($transactions as $transaction) {
@@ -191,7 +191,7 @@ class AccountController extends Controller
         }
 
 
-        $accounts = $query->orderBy('updated_at', 'desc')->paginate(20);
+        $accounts = $query->orderBy('updated_at', 'desc')->paginate(25);
         return view('cash-accounts.bank-accounts', compact('accounts', 'user', 'organization'));
     }
 
@@ -215,7 +215,7 @@ class AccountController extends Controller
         }
 
         // Sort clients by updated_at in descending order
-        $accounts = $query->orderBy('updated_at', 'desc')->paginate(20);
+        $accounts = $query->orderBy('updated_at', 'desc')->paginate(25);
         return view('cash-accounts.vault-accounts', compact('accounts', 'user', 'organization'));
     }
 
@@ -239,7 +239,7 @@ class AccountController extends Controller
         }
 
         // Sort clients by updated_at in descending order
-        $accounts = $query->orderBy('updated_at', 'desc')->paginate(20);
+        $accounts = $query->orderBy('updated_at', 'desc')->paginate(25);
         return view('cash-accounts.mobile-money-accounts', compact('accounts', 'user', 'organization'));
     }
 }
