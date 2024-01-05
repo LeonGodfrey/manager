@@ -700,7 +700,8 @@ class LoanController extends Controller
                 'branch_id' =>  $request->branch_id,
                 'user_id' =>  $request->user_id,
                 'client_id' =>  $request->client_id,
-                'type' =>  $request->type,
+                'loan_id' =>  $loan->id,
+                'type' =>  'Disbursement',
                 'description' =>  $request->description,
                 'amount' =>  $loan->approved_amount,
                 'date' =>  $request->disbursement_date,
@@ -756,6 +757,114 @@ class LoanController extends Controller
             return back()->withInput()->with('error', 'Failed to register the transaction. Please try again.');
         }
     }
+
+
+    public function disburse_reverse(Request $request)
+    {
+       // dd($request);   
+        try {
+            // Start a database transaction
+            DB::beginTransaction();
+            // Find the transaction to reverse
+            $transaction = Transaction::findOrFail($request->transaction_id);
+           // dd($transaction);
+            $loan = Loan::findOrFail($transaction->loan_id);
+            //dd($loan);
+            // Ensure the transaction is not already reversed
+            if ($transaction->is_reversed) {
+                return back()->with('error', 'Transaction is already reversed.');
+            }
+
+
+            if ($loan->paid_principal > 0 || $loan->paid_interest > 0) {
+                return back()->withInput()->with('error', 'Loan has payments, can not be reversed first reverse payments!.');
+            }
+
+            if ($loan->disbursement_date != $request->date) {
+                return back()->withInput()->with('error', 'Reversal Date is not the same as Disbursement Date!.');
+            }
+
+
+            // Create a new reverse transaction
+            $reverseTransaction = new Transaction();
+            $reverseTransaction->fill([
+                'org_id' => $transaction->org_id,
+                'branch_id' => $transaction->branch_id,
+                'user_id' => $request->user_id,
+                'client_id' => $transaction->client_id,
+                'loan_id' =>  $loan->id,
+                'receipt_number' => $transaction->receipt_number,
+                'type' => $transaction->type,
+                'description' => $transaction->description,
+                'amount' => $transaction->amount,
+                'date' => $request->date,
+                'reverses' => $request->transaction_id,
+            ]);
+            // dd($reverseTransaction);
+            $reverseTransaction->save();
+
+            // Reverse the transaction and mark it as reversed
+            $transaction->reversed_by = $reverseTransaction->id;
+            $transaction->is_reversed = true;
+            $transaction->reversal_reason = $request->reversal_reason;
+            $transaction->save();
+            //dd($transaction);
+
+            // Create transaction details - Debit            
+            $cash_account = Account::where('user_id', $transaction->user_id)->first(); // Fetch a single record
+            $detail2 = new TransactionDetail();
+            $detail2->fill([
+                'org_id' => $reverseTransaction->org_id,
+                'transaction_id' => $reverseTransaction->id,
+                'account_id' => $cash_account->id,
+                'amount' => $reverseTransaction->amount,
+                'type' => 'Disbursement',
+                'debit_credit' => 'Debit',
+            ]);
+            $detail2->save();
+
+            $cash_account->balance += $transaction->amount; // Debit an asset account
+            $cash_account->save();
+            // dd($cash_account);
+
+            // Fetching the Asset account related to the loan
+            $loan_account = Account::where('loan_product_id', $loan->loan_product_id)
+                ->where('type', 'Asset')
+                ->first(); // Fetch a single record
+
+            $detail1 = new TransactionDetail();
+            $detail1->fill([
+                'org_id' => $reverseTransaction->org_id,
+                'transaction_id' => $reverseTransaction->id,
+                'account_id' => $loan_account->id,
+                'amount' => $reverseTransaction->amount,
+                'type' =>  'Disbursement',
+                'debit_credit' => 'Credit',
+            ]);
+            $detail1->save();
+
+            $loan_account->balance -= $reverseTransaction->amount; // Credit an asset account
+            $loan_account->save();
+            // dd($loan_account);
+
+            $loan->schedules()->delete();            
+            $loan->status = 'approved';
+            //dd($loan);
+            $loan->save();
+
+            // Commit the database transaction
+            DB::commit();
+
+            return back()->with('success', 'Transaction reversed successfully.');
+        } catch (\Exception $e) {
+            // If an exception occurs, rollback the database transaction
+            DB::rollback();
+
+            return back()->with('error', 'Failed to reverse the transaction. Please try again.');
+        }
+    }
+
+
 
     //loan deferment
     public function defer(Request $request, Loan $loan)
@@ -899,33 +1008,33 @@ class LoanController extends Controller
         // Now, you can retrieve the ID or other attributes of the cash account
         $cash_account_id = $cash_account ? $cash_account->id : null;
 
-        
+
         //this has taken alot of my brains 
         //installments in arrears
         $installments = Schedule::where('loan_id', $loan->id)->where('type', 'Schedule')->orderBy('date', 'asc')->get();
 
         //retrieve the payments made
-        $payments = Schedule::where('loan_id', $loan->id)->where('type', 'Payment')->get();
-        
+        $payments = Schedule::where('loan_id', $loan->id)->where('is_reversed', 0)->where('type', 'Payment')->get();
+
         $totalPaidPrincipal = $payments->sum('principal');
         $totalPaidInterest = $payments->sum('interest');
 
 
         // Distribute the payments to the installments
-        $timeline = collect([]);//hold all intallment and payments
+        $timeline = collect([]); //hold all intallment and payments
         $principalPaid = 0;
         $interestPaid = 0;
         foreach ($installments as $installment) {
             $principalDue =  $installment->principal;
-            $interestDue =  $installment->interest;           
+            $interestDue =  $installment->interest;
 
             if ($totalPaidPrincipal > 0) {
                 //dd($totalPaidPrincipal);
-                
+
                 if ($totalPaidPrincipal >=  $principalDue) {
                     $principalPaid = $principalDue;
-                    $principalDue = 0;                    
-                }else{
+                    $principalDue = 0;
+                } else {
                     $principalPaid = $totalPaidPrincipal; //paid half principal
                     $principalDue -= $principalPaid;
                 }
@@ -935,23 +1044,23 @@ class LoanController extends Controller
             //interest
             if ($totalPaidInterest > 0) {
                 if ($totalPaidInterest >=  $interestDue) {
-                    $interestPaid = $interestDue; 
-                    $interestDue = 0;                   
-                }else{
+                    $interestPaid = $interestDue;
+                    $interestDue = 0;
+                } else {
                     $interestPaid = $totalPaidInterest;
                     $interestDue -= $interestPaid;
                 }
                 $totalPaidInterest -= $interestPaid;
             }
 
-             //days in arrears
-             $daysInArrears = now()->diffInDays($installment->date);
-             // $diff = now()->diffInDays($model->created_at);
-             $daysInArrears -= $loan->loanProduct->arrears_maturity_period;
-             //dd($daysInArrears);
-             $penalties = 0;
-             $penalties += ( $principalDue + $interestDue) * ( $loan->loanProduct->penalty_rate / 100);
-             //dd($penalties);
+            //days in arrears
+            $daysInArrears = now()->diffInDays($installment->date);
+            // $diff = now()->diffInDays($model->created_at);
+            $daysInArrears -= $loan->loanProduct->arrears_maturity_period;
+            //dd($daysInArrears);
+            $penalties = 0;
+            $penalties += ($principalDue + $interestDue) * ($loan->loanProduct->penalty_rate / 100);
+            //dd($penalties);
 
             $timeline->push([
                 'date' => $installment->date,
@@ -963,7 +1072,7 @@ class LoanController extends Controller
                 'penalties' =>  $penalties,
             ]);
         }
-        
+
         $installmentsInArrears = collect($timeline)->filter(function ($installment) {
             return $installment['date'] < now()->format('Y-m-d') && ($installment['principal'] > 0 || $installment['interest'] > 0); // Compare due date with current date
         });
@@ -1004,6 +1113,15 @@ class LoanController extends Controller
                  (Principal + Interest + Penalties)!.');
             }
 
+            $total_interest =  $loan->approved_amount * ($loan->approved_interest_rate / 100) * $loan->approved_period;
+            //outstanding balance
+            $principal_bal = $loan->approved_amount - $loan->paid_principal;
+            $interest_bal = $total_interest - $loan->paid_interest;
+            if ($paid_principal > $principal_bal || $paid_interest > $interest_bal) {
+                DB::rollback();
+                return back()->withInput()->with('error', 'Amount Entered is greater than outstanding loan balances.');
+            }
+
             //update schedule
             $schedule = new Schedule();
             $schedule->fill([
@@ -1015,7 +1133,6 @@ class LoanController extends Controller
                 'penalties' => $paid_penalties,
             ]);
             $schedule->save();
-
 
             // Create a new Transaction
             $transaction = new Transaction();
@@ -1047,7 +1164,6 @@ class LoanController extends Controller
 
             $cash_account->balance += $transaction->amount; // debit an asset account
             $cash_account->save();
-
 
             //principal
             $principal_account = Account::where('loan_product_id', $loan->loan_product_id)->where('type', 'Asset')->first();
@@ -1090,8 +1206,8 @@ class LoanController extends Controller
                 //fetched the account acording to name   
                 $penalties_account = Account::where('name', 'Late Payment Fees')->where('type', 'Income')->first();
                 // Create transaction details - credit
-                $detail3 = new TransactionDetail();
-                $detail3->fill([
+                $detail4 = new TransactionDetail();
+                $detail4->fill([
                     'org_id' => $transaction->org_id,
                     'transaction_id' => $transaction->id,
                     'account_id' => $penalties_account->id,
@@ -1099,7 +1215,7 @@ class LoanController extends Controller
                     'type' => 'Penalties',
                     'debit_credit' => 'Credit',
                 ]);
-                $detail3->save();
+                $detail4->save();
 
                 $penalties_account->balance += $paid_penalties; // credit an income account
                 $penalties_account->save();
@@ -1109,25 +1225,184 @@ class LoanController extends Controller
             //update loan balance
             $loan->paid_principal += $paid_principal;
             $loan->paid_interest += $paid_interest;
-            $total_interest =  $loan->approved_amount * ($loan->approved_interest_rate / 100) * $loan->approved_period; 
             if ($request->paid_penalties) {
                 $loan->paid_penalties += $paid_penalties;
             }
             //update status
-           if($loan->paid_principal == $loan->approved_amount && $loan->paid_interest == $total_interest){
-            $loan->status = 'cleared';
-           }
+            if ($loan->paid_principal >= $loan->approved_amount && $loan->paid_interest >= $total_interest) {
+                $loan->status = 'cleared';
+            }
             $loan->save();
             // Commit the database transaction
             DB::commit();
 
-            $client = Client::findOrFail($loan->client_id);
-            return redirect()->route('clients.client', ['client' => $client])->with('success', 'Payment registered  successfully.');
+            // $client = Client::findOrFail($loan->client_id);
+            return redirect()->route('loans.loan', ['loan' => $loan])->with('success', 'Payment registered  successfully.');
         } catch (\Exception $e) {
             // If an exception occurs, rollback the database transaction
             DB::rollback();
 
             return back()->withInput()->with('error', 'Failed to register the transaction. Please try again.');
+        }
+    }
+
+    //loan payment reversal
+    public function loan_payment_reverse(Request $request)
+    {
+        try {
+            // Start a database transaction
+            DB::beginTransaction();
+            // Find the transaction to reverse
+            $transaction = Transaction::findOrFail($request->transaction_id);
+            $loan = Loan::findOrFail($transaction->loan_id);
+
+            // Ensure the transaction is not already reversed
+            if ($transaction->is_reversed) {
+                return back()->with('error', 'Transaction is already reversed.');
+            }
+
+            // Check if the cash account has enough funds
+            $cashAccount = Account::where('user_id', $transaction->user_id)->first(); // Fetch a single record
+            // dd($cashAccount);
+            if ($cashAccount->balance < $transaction->amount) {
+                // If the balance is insufficient, rollback the transaction and return an error message
+                DB::rollback();
+                return back()->withInput()->with('error', 'Insufficient funds in the cash account to cover this transaction!.');
+            }
+
+            // Create a new reverse transaction
+            $reverseTransaction = new Transaction();
+            $reverseTransaction->fill([
+                'org_id' => $transaction->org_id,
+                'branch_id' => $transaction->branch_id,
+                'user_id' => $request->user_id,
+                'client_id' => $transaction->client_id,
+                'loan_id' =>  $transaction->loan_id,
+                'receipt_number' => $transaction->receipt_number,
+                'type' => $transaction->type,
+                'description' => $transaction->description,
+                'amount' => $transaction->amount,
+                'date' => $request->date,
+                'reverses' => $request->transaction_id,
+            ]);
+            // dd($reverseTransaction);
+            $reverseTransaction->save();
+
+            // Reverse the transaction and mark it as reversed
+            $transaction->reversed_by = $reverseTransaction->id;
+            $transaction->is_reversed = true;
+            $transaction->reversal_reason = $request->reversal_reason;
+            $transaction->save();
+
+            //principal          
+            $principal_detail = TransactionDetail::where('transaction_id', $request->transaction_id)->where('type', 'Principal')->first();
+            $principal_account = Account::where('id', $principal_detail->account_id)->where('type', 'Asset')->first();
+            //dd($principal_account);
+            // Create transaction details - debit
+            $detail2 = new TransactionDetail();
+            $detail2->fill([
+                'org_id' => $reverseTransaction->org_id,
+                'transaction_id' => $reverseTransaction->id,
+                'account_id' => $principal_detail->account_id,
+                'amount' => $principal_detail->amount,
+                'type' => 'Principal',
+                'debit_credit' => 'Debit',
+            ]);
+
+            $detail2->save();
+
+            $principal_account->balance += $principal_detail->amount; // debit an asset account
+            $principal_account->save();
+            // dd($principal_account);
+
+            //interest
+            $interest_detail = TransactionDetail::where('transaction_id', $request->transaction_id)->where('type', 'Interest')->first();
+            $interest_account = Account::where('id', $interest_detail->account_id)->where('type', 'Income')->first();
+            // Create transaction details - credit
+            $detail3 = new TransactionDetail();
+            $detail3->fill([
+                'org_id' => $reverseTransaction->org_id,
+                'transaction_id' => $reverseTransaction->id,
+                'account_id' => $interest_account->id,
+                'amount' => $interest_detail->amount,
+                'type' => 'Interest',
+                'debit_credit' => 'Debit',
+            ]);
+            $detail3->save();
+
+            $interest_account->balance -= $interest_detail->amount; // debit an income account
+            // dd($interest_account);
+            $interest_account->save();
+
+            //penalties
+            $penalties_detail = TransactionDetail::where('transaction_id', $request->transaction_id)->where('type', 'Penalties')->first();
+            if ($penalties_detail) {
+                //dd($penalties_detail);
+                //fetched the account acording to name   
+                $penalties_account = Account::where('name', 'Late Payment Fees')->where('type', 'Income')->first();
+                // Create transaction details - credit
+                $detail4 = new TransactionDetail();
+                $detail4->fill([
+                    'org_id' => $reverseTransaction->org_id,
+                    'transaction_id' => $reverseTransaction->id,
+                    'account_id' => $penalties_account->id,
+                    'amount' => $penalties_detail->amount,
+                    'type' => 'Penalties',
+                    'debit_credit' => 'Debit',
+                ]);
+                $detail4->save();
+
+                $penalties_account->balance -= $penalties_detail->amount; // Debit an income account
+                $penalties_account->save();
+            }
+
+
+            $cash_detail = TransactionDetail::where('transaction_id', $request->transaction_id)->where('type', 'Payment')->first();
+            $cash_account = Account::findOrFail($cash_detail->account_id);
+            // Create transaction details - Credit
+            $detail1 = new TransactionDetail();
+            $detail1->fill([
+                'org_id' => $reverseTransaction->org_id,
+                'transaction_id' => $reverseTransaction->id,
+                'account_id' => $cash_account->id,
+                'amount' => $reverseTransaction->amount,
+                'type' => 'Payment',
+                'debit_credit' => 'Credit',
+            ]);
+            $detail1->save();
+
+            $cash_account->balance -= $transaction->amount; // Credit an asset account
+            $cash_account->save();
+            // dd($cash_account);
+
+            //update loan balance
+            $loan->paid_principal -= $principal_detail->amount;
+            $loan->paid_interest -= $interest_detail->amount;
+            if ($penalties_detail) {
+                $loan->paid_penalties -= $penalties_detail->amount;
+            }
+            //update status
+            if ($loan->status == 'cleared') {
+                $loan->status = 'disbursed';
+            }
+            //dd($loan);
+            $loan->save();
+
+            //update schedule
+            $schedule = Schedule::where('loan_id', $loan->id)->where('date', $transaction->date)->first();
+            // dd($schedule);
+            $schedule->is_reversed = true;
+            $schedule->save();
+
+            // Commit the database transaction
+            DB::commit();
+
+            return back()->with('success', 'Transaction reversed successfully.');
+        } catch (\Exception $e) {
+            // If an exception occurs, rollback the database transaction
+            DB::rollback();
+
+            return back()->with('error', 'Failed to reverse the transaction. Please try again.');
         }
     }
 }

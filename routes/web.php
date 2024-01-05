@@ -4,13 +4,14 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LoanController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ClientController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\SuperAdminController;
 use App\Http\Controllers\LoanProductController;
+use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\SavingsAccountController;
 use App\Http\Controllers\SavingsProductController;
-use App\Http\Controllers\TransactionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -129,7 +130,8 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth'])->group(function () {
     Route::get('clients/{client}/savings-accounts/{account}', [SavingsAccountController::class, 'index'])->name('savings-accounts.index');
     Route::get('clients/{client}/savings-accounts/{account}/ledger', [SavingsAccountController::class, 'ledger'])->name('savings-accounts.ledger');
-    Route::get('clients/{client}/savings-accounts/create', [SavingsAccountController::class, 'create'])->name('savings-accounts.create');
+    Route::get('savings-accounts/create/{client}', [SavingsAccountController::class, 'create'])->name('savings-accounts.create');
+    //Route::get('clients/{client}/savings-accounts/create_account', [SavingsAccountController::class, 'create_account'])->name('savings-accounts.create_account');
     Route::post('savings-accounts/', [SavingsAccountController::class, 'store'])->name('savings-accounts.store');
     Route::get('clients/{client}/savings-accounts/deposit/{account}', [SavingsAccountController::class, 'deposit'])->name('savings-accounts.deposit');
     Route::post('savings-accounts/deposit', [SavingsAccountController::class, 'store_deposit'])->name('savings-accounts.store-deposit');
@@ -156,6 +158,7 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/loans/{loan}', [LoanController::class, 'update'])->name('loans.update');  
     Route::put('/loans/approve/{loan}', [LoanController::class, 'approve'])->name('loans.approve');
     Route::put('/loans/disburse/{loan}', [LoanController::class, 'disburse'])->name('loans.disburse');
+    Route::post('/loans/disburse-reverse', [LoanController::class, 'disburse_reverse'])->name('loans.disburse-reverse');
     Route::put('/loans/defer/{loan}', [LoanController::class, 'defer'])->name('loans.defer');
     Route::delete('/loans/{loan}', [LoanController::class, 'destroy'])->name('loans.destroy'); 
     Route::get('/loans/{loan}/schedule', [loanController::class, 'schedule'])->name('loans.schedule'); 
@@ -200,6 +203,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/cash-accounts-mobile-money', [AccountController::class, 'mobile_money_account'])->name('cash-accounts-mobile-money');
 });
 
+//reports
+Route::middleware(['auth'])->group(function () {
+    Route::get('/reports/cash-book', [ReportController::class, 'cash_book'])->name('reports.cashbook');
+   
+});
 
 //----------------superadmin-org-----------------------------
 // All Organizations

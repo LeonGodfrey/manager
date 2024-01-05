@@ -514,7 +514,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8">No Transactions found.</td>
+                                <td colspan="8">No Payments found.</td>
                             </tr>
                         @endforelse
                     </tbody>

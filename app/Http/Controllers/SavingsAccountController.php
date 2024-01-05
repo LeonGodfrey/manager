@@ -17,6 +17,31 @@ use Illuminate\Support\Facades\Auth;
 
 class SavingsAccountController extends Controller
 {
+    public function create(Client $client)
+    {
+       // dd($client);
+        // Retrieve the authenticated user
+        $user = Auth::user();
+        // Get the organization associated with the user
+        $organization = Organization::find($user->org_id);
+        // Retrieve all branches belonging to the organization
+        $branches = Branch::where('org_id', $user->org_id)->get();
+        $savings_products = SavingsProduct::where('org_id', $user->org_id)->get();
+        //get client's age
+        $dob = Carbon::parse($client->dob);
+        $age = $dob->age;
+
+         // Fetching the Asset account related to the user
+         $cash_account = Account::where('user_id', $user->id)
+         ->where('type', 'Asset')
+         ->first();
+        $cash_account_id = $cash_account ? $cash_account->id : null;
+
+        return view('savings-accounts.create', compact('user', 'organization', 'branches', 'savings_products', 'client', 'age', 'cash_account_id'));
+    }
+
+    
+    
     public function index(Client $client, SavingsAccount $account)
     {
         // Retrieve the authenticated user and organization
@@ -67,28 +92,7 @@ class SavingsAccountController extends Controller
         return view('savings-accounts.ledger', compact('transactions', 'details', 'user', 'organization', 'account', 'client', 'age'));
     }
     
-    public function create(Client $client)
-    {
-        // Retrieve the authenticated user
-        $user = Auth::user();
-        // Get the organization associated with the user
-        $organization = Organization::find($user->org_id);
-        // Retrieve all branches belonging to the organization
-        $branches = Branch::where('org_id', $user->org_id)->get();
-        $savings_products = SavingsProduct::where('org_id', $user->org_id)->get();
-        //get client's age
-        $dob = Carbon::parse($client->dob);
-        $age = $dob->age;
-
-         // Fetching the Asset account related to the user
-         $cash_account = Account::where('user_id', $user->id)
-         ->where('type', 'Asset')
-         ->first();
-        $cash_account_id = $cash_account ? $cash_account->id : null;
-
-        return view('savings-accounts.create', compact('user', 'organization', 'branches', 'savings_products', 'client', 'age', 'cash_account_id'));
-    }
-
+    
     public function store(Request $request)
     {
         $validatedData = $request->validate([

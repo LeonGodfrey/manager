@@ -60,8 +60,8 @@
                 <h3 class="card-title col-xs-6"><b>Loans</b></h3>
                 <div class="btn-group-links col-xs-6 text-right">
                     <p class="text-right"><a href="{{ route('loans.create', ['client' => $client]) }}">Apply for New
-                            Loan</a> | <a href="cleared-loan.php">Cleared Loan</a> | <a href="deleted-loan.php">deferred
-                            Loan</a></p>
+                            Loan</a> | <a href="cleared-loan.php">Cleared Loans</a> | <a href="deleted-loan.php">deferred
+                            Loans</a></p>
                 </div>
             </div>
             <div class="card-body">

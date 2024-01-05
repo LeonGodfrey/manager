@@ -65,4 +65,9 @@ class Loan extends Model
     {
         return $this->belongsTo(Organization::class, 'org_id');
     }
+
+    public function schedules()
+    {
+        return $this->hasMany(Schedule::class, 'loan_id');
+    }
 }

@@ -42,7 +42,7 @@ return new class extends Migration
             $table->string('file_link6')->nullable();
             $table->string('file_link7')->nullable();
             $table->string('file_link8')->nullable();
-            $table->decimal('approved_amount', 15, 2)->nullable();
+            $table->decimal('approved_amount', 15, 2)->default(0);
             $table->integer('approved_period')->nullable();
             $table->date('approved_date')->nullable();
             $table->float('approved_interest_rate')->default(0);
@@ -50,9 +50,9 @@ return new class extends Migration
             $table->text('defer_comment')->nullable();
             $table->date('disbursement_date')->nullable();
             $table->string('voucher_number')->nullable();  
-            $table->decimal('paid_principal', 15, 2)->nullable();
-            $table->decimal('paid_interest', 15, 2)->nullable();
-            $table->decimal('paid_penalties', 15, 2)->nullable();        
+            $table->decimal('paid_principal', 15, 2)->default(0);
+            $table->decimal('paid_interest', 15, 2)->default(0);
+            $table->decimal('paid_penalties', 15, 2)->default(0);        
             $table->enum('status', ['pending_appraisal', 'pending_approval', 'approved', 'disbursed', 'cleared', 'deferred', 'waived_off', 'written_off'])->default('pending_appraisal');
             $table->timestamps();
         });

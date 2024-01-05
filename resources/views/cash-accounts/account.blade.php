@@ -19,8 +19,8 @@
         <div class="card card-success card-outline elevation-3">
             <div class="card-header">
                 <h5 class=""> Account Balance: <b><span class="text-success">{{ $organization->currency_code }}</span>
-                    <span class="" >{{ number_format($account->balance, 0, '.', ',') }}</span>
-                </b></h5>
+                        <span class="">{{ number_format($account->balance, 0, '.', ',') }}</span>
+                    </b></h5>
             </div>
             <!-- /.card-header -->
             <div class="card-body table-responsive">
@@ -30,12 +30,12 @@
                             <th>ID</th>
                             <th>Created</th>
                             <th>Txn Date</th>
-                            <th>Branch</th>                            
+                            <th>Branch</th>
                             <th>Transaction</th>
                             <th>Amount</th>
                             <th>Type</th>
                             <th> Accounts</th>
-                            
+
                             <th class="text-nowrap">Action/ Comment</th>
                         </tr>
                     </thead>
@@ -56,7 +56,8 @@
                                 <td>
                                     @foreach ($details[$transaction->id] as $detail)
                                         <div class="text-nowrap">
-                                            {{ $detail->account->name . ' (' . number_format($detail->amount, 0, '.', ',') . ')' }} {{ $detail->debit_credit }},
+                                            {{ $detail->account->name . ' (' . number_format($detail->amount, 0, '.', ',') . ')' }}
+                                            {{ $detail->debit_credit }},
                                         </div>
                                     @endforeach
                                 </td>
@@ -99,14 +100,18 @@
                                             <form method="post" action="{{ route('transactions.other-income-reverse') }}">
                                         @endif
                                         @if ($transaction->type == 'Payment')
-                                        <form method="post" action="{{ route('loans.payment-reverse') }}">
-                                    @endif
-                                    @if ($transaction->type == 'Deposit')
-                                        <form method="post" action="{{ route('savings-accounts.reverse-deposit') }}">
-                                    @endif
-                                    @if ($transaction->type == 'Withdrawal')
+                                            <form method="post" action="{{ route('loans.payment-reverse') }}">
+                                        @endif
+                                        @if ($transaction->type == 'Disbursement')
+                                            <form method="post" action="{{ route('loans.disburse-reverse') }}">
+                                        @endif
+                                        @if ($transaction->type == 'Deposit')
+                                            <form method="post" action="{{ route('savings-accounts.reverse-deposit') }}">
+                                        @endif
+                                        @if ($transaction->type == 'Withdrawal')
                                             <form method="post" action="{{ route('savings-accounts.reverse-withdraw') }}">
                                         @endif
+
                                         @csrf
                                         <div class="modal-content">
                                             <div class="modal-header">

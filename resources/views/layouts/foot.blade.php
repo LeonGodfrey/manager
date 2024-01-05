@@ -112,6 +112,15 @@
         // daysOfWeekDisabled: [0]
     });
 
+    //Date picker
+    $('#reservationdate3').datetimepicker({
+        format: 'YYYY-MM-DD',
+       // defaultDate: moment(),
+        maxDate: moment(),
+        allowInputToggle: true,
+        // daysOfWeekDisabled: [0]
+    });
+
     $('.datepicker').each(function() {
     $(this).datetimepicker({
         format: 'YYYY-MM-DD',

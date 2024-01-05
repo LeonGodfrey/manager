@@ -18,16 +18,16 @@
 
 @section('main_content')
 
-@include('layouts.client-info')
+    @include('layouts.client-info')
 
     <div class="col-sm-12">
-        <div class="card card-outline card-success elevation-3">
+        <div class="card card-outline card-success elevation-3 mb-5">
             <div class="card-header">
                 <h3 class="card-title col-xs-6">Loan Application Details</h3>
             </div>
             <form id="loanForm" method="post" action="{{ route('loans.store') }}" enctype="multipart/form-data">
                 @csrf
-                <div class="card-body mb-5">
+                <div class="card-body">
                     <div class="form-group">
                         <label for="loan_product_id">Loan Product *</label>
                         <p class="text-sm m-0">Select the correct Loan Product for this Loan Application.</p>
@@ -51,8 +51,9 @@
                             <div class="input-group-prepend">
                                 <span class="input-group-text">{{ $organization->currency_code }}</span>
                             </div>
-                            <input autocomplete="off" type="text" class="form-control thousand-separator" id="application_amount"
-                                name="application_amount" value="{{ old('application_amount') }}" required>
+                            <input autocomplete="off" type="text" class="form-control thousand-separator"
+                                id="application_amount" name="application_amount" value="{{ old('application_amount') }}"
+                                required>
                         </div>
                         @error('application_amount')
                             <div class="text-sm text-danger">{{ $message }}</div>
@@ -120,7 +121,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             const unformatNumber = (value) => {
                 return parseFloat(value.replace(/[^\d.-]/g,
-                '')); // Remove non-numeric characters except dots and minus signs
+                    '')); // Remove non-numeric characters except dots and minus signs
             };
 
             const numberWithCommas = (value) => {
