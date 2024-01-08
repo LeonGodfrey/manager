@@ -6,6 +6,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\AccountController;
+use App\Http\Controllers\ImportController;
 use App\Http\Controllers\SuperAdminController;
 use App\Http\Controllers\LoanProductController;
 use App\Http\Controllers\TransactionController;
@@ -115,6 +116,14 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/settings/loan-products/{loan_product}/edit', [LoanProductController::class, 'edit'])->name('settings.loan-products.edit');
     Route::put('/settings/loan-products/{loan_product}', [LoanProductController::class, 'update'])->name('settings.loan-products.update');
 });
+
+//data imports
+Route::middleware(['auth'])->group(function () {
+    Route::get('/settings/data-imports', [ImportController::class, 'index'])->name('settings.data-imports.index');
+    Route::get('/settings/data-imports/clients/create', [ImportController::class, 'client_create'])->name('settings.data-imports.clients.create');   
+    Route::post('/settings/data-imports/clients/store', [ImportController::class, 'client_store'])->name('settings.data-imports.clients.store'); 
+});
+
 //clients
 Route::middleware(['auth'])->group(function () {
     Route::get('/clients', [ClientController::class, 'index'])->name('clients.index');
@@ -206,6 +215,11 @@ Route::middleware(['auth'])->group(function () {
 //reports
 Route::middleware(['auth'])->group(function () {
     Route::get('/reports/cash-book', [ReportController::class, 'cash_book'])->name('reports.cashbook');
+    Route::get('/reports/cash-book-filter', [ReportController::class, 'cash_book_filter'])->name('reports.cashbook-filter');
+    Route::get('/reports/loan/disbursement', [ReportController::class, 'disbursement'])->name('reports.loans.disbursement');
+    Route::get('/reports/loan/disbursement-filter', [ReportController::class, 'disbursement_filter'])->name('reports.loans.disbursement-filter');
+    Route::get('/reports/loan/portfolio', [ReportController::class, 'portfolio'])->name('reports.loans.portfolio');
+    Route::get('/reports/loan/portfolio-filter', [ReportController::class, 'portfolio_filter'])->name('reports.loans.portfolio-filter');
    
 });
 

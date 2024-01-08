@@ -54,7 +54,7 @@
                                 <div class="input-group-prepend">
                                     <span class="input-group-text">{{ $organization->currency_code }}</span>
                                 </div>
-                                <input type="text" class="form-control thousand-separator" id="amount" name="amount"
+                                <input type="text" autocomplete="off" min="0" class="form-control thousand-separator" id="amount" name="amount"
                                     value="{{ old('amount') }}" required>
                             </div>
                             @error('amount')

@@ -281,7 +281,7 @@ class TransactionController extends Controller
         $reverseTransaction->fill([
             'org_id' => $transaction->org_id,
             'branch_id' => $transaction->branch_id,
-            'user_id' => $request->user_id,
+            'user_id' => $transaction->user_id,
             'client_id' => $transaction->client_id,
             'receipt_number' => $transaction->receipt_number,
             'type' => $transaction->type,
@@ -506,7 +506,7 @@ class TransactionController extends Controller
         $reverseTransaction->fill([
             'org_id' => $transaction->org_id,
             'branch_id' => $transaction->branch_id,
-            'user_id' => $request->user_id,
+            'user_id' => $transaction->user_id,
             'receipt_number' => $transaction->receipt_number,
             'type' => $transaction->type,
             'description' => $transaction->description,
@@ -779,7 +779,7 @@ class TransactionController extends Controller
         $reverseTransaction->fill([
             'org_id' => $transaction->org_id,
             'branch_id' => $transaction->branch_id,
-            'user_id' => $request->user_id,
+            'user_id' => $transaction->user_id,
             'receipt_number' => $transaction->receipt_number,
             'type' => $transaction->type,
             'description' => $transaction->description,
@@ -1102,7 +1102,7 @@ class TransactionController extends Controller
         $reverseTransaction->fill([
             'org_id' => $transaction->org_id,
             'branch_id' => $transaction->branch_id,
-            'user_id' => $request->user_id,
+            'user_id' => $transaction->user_id,
             'receipt_number' => $transaction->receipt_number,
             'type' => $transaction->type,
             'subtype' => $transaction->subtype,

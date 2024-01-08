@@ -109,7 +109,7 @@
                       <p>Income Statement</p>
                     </a>
                   </li>
-                  <li class="nav-item">
+                  {{-- <li class="nav-item">
                     <a href="#" class="nav-link">
                       <i class="far fa-dot-circle nav-icon"></i>
                       <p>Balance Sheet</p>
@@ -120,7 +120,7 @@
                       <i class="far fa-dot-circle nav-icon"></i>
                       <p>Breakdown Per GLA</p>
                     </a>
-                  </li>
+                  </li> --}}
                 </ul>
               </li>
               <li class="nav-item">
@@ -142,7 +142,7 @@
                     </a>
                   </li>
                   <li class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="{{route('reports.loans.disbursement')}}" class="nav-link">
                       <i class="far fa-dot-circle nav-icon"></i>
                       <p>Disbursment Report</p>
                     </a>
@@ -246,7 +246,7 @@
                 </a>
               </li>
               <li class="nav-item">
-                <a href="org_data_imports.php" class="nav-link">
+                <a href="{{route('settings.data-imports.index')}}" class="nav-link">
                   <i class="far fa-circle nav-icon"></i>
                   <p>Data Imports</p>
                 </a>

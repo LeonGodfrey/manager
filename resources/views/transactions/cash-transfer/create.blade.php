@@ -96,7 +96,7 @@
                             <div class="input-group-prepend">
                                 <span class="input-group-text">{{ $organization->currency_code }}</span>
                             </div>
-                            <input type="text" class="form-control thousand-separator" id="amount" name="amount"
+                            <input type="text" autocomplete="off" min="0" class="form-control thousand-separator" id="amount" name="amount"
                                 value="{{ old('amount') }}" required>
                         </div>
                         @error('amount')
@@ -123,7 +123,7 @@
                     </div>
                     <div class="form-group">
                         <label for="receipt_number">Receipt Number </label>
-                        <input type="text" class="form-control" id="receipt_number" name="receipt_number"
+                        <input type="text" autocomplete="off" class="form-control" id="receipt_number" name="receipt_number"
                             value="{{ old('receipt_number') }}">
                         @error('receipt_number')
                             <div class="text-sm text-danger">{{ $message }}</div>
