@@ -41,6 +41,9 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @php
+                        $balance = 0;                       
+                    @endphp
                         @forelse ($transactions as $transaction)
                             <tr @if ($transaction->is_reversed or $transaction->reverses) class="text-muted" @endif>
                                 <td class="text-nowrap">{{ $transaction->id }}</td>
@@ -48,7 +51,18 @@
                                 <td class="text-nowrap">{{ $transaction->date }}</td>
                                 <td class="text-nowrap">{{ $transaction->type }}</td>
                                 <td class="text-nowrap"><b>{{ number_format($transaction->amount, 0, '.', ',') }} </b></td>
-                                <td></td>
+                                @if($transaction->type == 'Deposit')
+                                @php
+                        $balance += $transaction->amount;                       
+                    @endphp
+                    @else
+                    @php
+                    $balance -= $transaction->amount;                       
+                @endphp
+                @endif
+
+
+                <td class="text-nowrap"><b>{{ number_format($balance, 0, '.', ',') }} </b></td>
                                
                                 <td>
 

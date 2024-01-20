@@ -57,7 +57,16 @@
 <!-- AdminLTE for demo purposes -->
 {{-- <!-- <script src="{{ asset('dist/js/demo.js') }}"></script> --> --}}
 <script src="https://rawgit.com/eKoopmans/html2pdf/master/dist/html2pdf.bundle.js"></script>
+{{-- clipboardjs --}}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.10/clipboard.min.js"></script>
+<script>
+  var clipboard = new ClipboardJS('.copy-btn');
 
+  clipboard.on('success', function(e) {
+      e.clearSelection();
+      alert('Copied to clipboard: ' + e.text);
+  });
+</script>
 
 
  <script>

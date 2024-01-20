@@ -124,7 +124,15 @@
                             @endphp
                             <tr @if ($transaction->is_reversed or $transaction->reverses) class="text-muted" @endif>
                                 <td class="text-nowrap">{{ $transaction->id }}</td>
-                                <td class="text-nowrap">{{ $transaction->type }}</td>
+                                <td class="text-nowrap">{{ $transaction->type }} <br>
+                                    @if ($transaction->is_reversed)
+                                    Reversed by #{{ $transaction->reversed_by }} : {{ $transaction->reversal_reason }}
+                                @elseif($transaction->reverses)
+                                    Reverses #{{ $transaction->reverses }}
+                                @else
+                                   
+                                @endif
+                                </td>
                                 <td class="text-nowrap">{{ $transaction->date }}</td>
                                 <td class="text-nowrap">{{ $account->name }} </td>
                                 <td class="text-nowrap">
@@ -143,7 +151,7 @@
 
                                 @foreach ($details[$transaction->id] as $detail)
                                     @if ($detail->account_id == $account->id && $detail->debit_credit == 'Debit')
-                                        <td>{{ number_format($transaction->amount, 0, '.', ',') }}</td>
+                                        <td class="text-primary">{{ number_format($transaction->amount, 0, '.', ',') }}</td>
                                         <td>0</td>
                                         @php
                                             $balance += $transaction->amount;
@@ -152,7 +160,7 @@
                                     @endif
                                     @if ($detail->account_id == $account->id && $detail->debit_credit == 'Credit')
                                         <td>0</td>
-                                        <td>{{ number_format($transaction->amount, 0, '.', ',') }}</td>
+                                        <td class="text-danger" >{{ number_format($transaction->amount, 0, '.', ',') }}</td>
                                         @php
                                             $balance -= $transaction->amount;
                                             $total_credits += $transaction->amount;
@@ -160,7 +168,7 @@
                                     @endif
                                 @endforeach
                                 </td>
-                                <td>{{ number_format($balance, 0, '.', ',') }}</td>
+                                <td class="text-primary"><b>{{ number_format($balance, 0, '.', ',') }}</b></td>
                             </tr>
 
                         @empty
@@ -173,9 +181,9 @@
                     <tfoot>
                         <tr>
                             <td colspan="6"><b>Totals </b></td>
-                            <td><b>{{ number_format($total_debits, 0, '.', ',') }}</b></td>
-                            <td><b>{{ number_format($total_credits, 0, '.', ',') }}</b></td>
-                            <td><b>{{ number_format($balance, 0, '.', ',') }}</b></td>
+                            <td class="text-primary" ><b>{{ number_format($total_debits, 0, '.', ',') }}</b></td>
+                            <td class="text-danger" ><b>{{ number_format($total_credits, 0, '.', ',') }}</b></td>
+                            <td class="text-primary" ><b>{{ number_format($balance, 0, '.', ',') }}</b></td>
                         </tr>
                     </tfoot>
 

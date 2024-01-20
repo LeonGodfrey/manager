@@ -28,7 +28,7 @@
                             <td> <a href="{{route('settings.data-imports.clients.create')}}">  Clients </a> </td>
                         </tr>
                         <tr>
-                            <td>Savings Accounts</td>
+                            <td> <a href="{{route('settings.data-imports.savings-accounts.create')}}">  Savings Accounts </a> </td>
                         </tr>
                         <tr>
                             <td>Loans</td>
@@ -59,9 +59,26 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @forelse ($imports as $import)
                         <tr>
-                        </tr>
-                       
+                                <td>{{ $import->type }}</td>
+                                <td>{{ $import->description }}</td>
+                                <td><a href="{{ Storage::url($import->import_file) }}" download>import file</a></td>                                <td>{{ $import->status }}</td>
+                                <td>{{ $import->message }}</td>
+                                <td>{{ $import->created_at }}</td>
+                                <td>
+                                    @if($import->error_file)
+                                        <a href="{{ Storage::url($import->error_file) }}" download>errors file</a>
+                                    @else
+                                        No errors
+                                    @endif
+                                </td>                        
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="8">No imports found.</td>
+                            </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div> <!-- /.card-body -->
