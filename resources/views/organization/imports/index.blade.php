@@ -31,7 +31,7 @@
                             <td> <a href="{{route('settings.data-imports.savings-accounts.create')}}">  Savings Accounts </a> </td>
                         </tr>
                         <tr>
-                            <td>Loans</td>
+                            <td> <a href="{{route('settings.data-imports.loans.create')}}">Loans </a></td>
                         </tr>
                     </tbody>
                 </table>

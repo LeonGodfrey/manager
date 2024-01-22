@@ -1,8 +1,8 @@
 @extends('layouts.app')
 
 @section('org_name', $organization->org_name)
-@section('title', 'Import Savings Accounts | ' . $organization->org_name)
-@section('page_title', 'Import Savings Accounts')
+@section('title', 'Import Loans | ' . $organization->org_name)
+@section('page_title', 'Import Loans')
 
 
 @section('bread_crumb')
@@ -23,7 +23,7 @@
 
                 <ul>
                     <li>Click this link to Download the data template <a
-                            href="{{ route('settings.data-imports.savings-accounts.template') }}">Download Savings Accounts
+                            href="{{ route('settings.data-imports.loans.template') }}">Download Loans
                             Template</a>
                     </li>
                     <hr>
@@ -38,9 +38,10 @@
                     </li>
                     <li> <span class="text-monospace"> <b>client_number</b> </span> must be unique, double check to
                         avoid repetitions.</li>
+                    <li> <span class="text-monospace"> <b>last_payment_date</b> </span>is the date when the last installment was paid by the Client.</li>
                     <br>
-                    <li> Use the table below to specify a <span class="text-monospace"> <b>savings_product_id </b> </span>for
-                        each Savings Account.</li>
+                    <li> Use the table below to specify a <span class="text-monospace"> <b>loan_product_id </b> </span>for
+                        each Loan.</li>
                     <div class="row">
                         <div class="col-md-6">
                             <table class="table table-striped table-bordered table-sm">
@@ -51,20 +52,20 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @unless ($savings_products->isEmpty())
-                                        @foreach ($savings_products as $savings_product)
+                                    @unless ($loan_products->isEmpty())
+                                        @foreach ($loan_products as $loan_product)
                                             <tr class="text-nowrap">
                                                 <td>
-                                                    <span>{{ $savings_product->name }}</span>
+                                                    <span>{{ $loan_product->name }}</span>
                                                     <button class="btn btn-sm btn-info copy-btn"
-                                                        data-clipboard-text="{{ $savings_product->name }}">
+                                                        data-clipboard-text="{{ $loan_product->name }}">
                                                         <i class="fas fa-copy"></i>
                                                     </button>
                                                 </td>
                                                 <td>
-                                                    <span>{{ $savings_product->id }}</span>
+                                                    <span>{{ $loan_product->id }}</span>
                                                     <button class="btn btn-sm btn-info copy-btn"
-                                                        data-clipboard-text="{{ $savings_product->id }}">
+                                                        data-clipboard-text="{{ $loan_product->id }}">
                                                         <i class="fas fa-copy"></i>
                                                     </button>
                                                 </td>
@@ -82,8 +83,8 @@
 
                     <br>
                     <li>Column <span class="text-monospace"> <b>branch</b> </span> specifies the branch to which the
-                        savings account belongs.</li>
-                    <li>Use the table below to specify a <b>branch</b> to which each Savings Account belongs.</li>
+                        loan belongs.</li>
+                    <li>Use the table below to specify a <b>branch</b> to which each loan belongs.</li>
                     <div class="row">
                         <div class="col-md-6">
                             <table class="table table-striped table-bordered table-sm">

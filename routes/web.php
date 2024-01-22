@@ -125,7 +125,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/settings/data-imports/clients/store', [ImportController::class, 'client_store'])->name('settings.data-imports.clients.store'); 
     Route::get('/settings/data-imports/savings-accounts/create', [ImportController::class, 'savings_accounts_create'])->name('settings.data-imports.savings-accounts.create'); 
     Route::get('/settings/data-imports/savings-accounts/template', [ImportController::class, 'savings_accounts_template'])->name('settings.data-imports.savings-accounts.template');    
-    Route::post('/settings/data-imports/savings-accounts/store', [ImportController::class, 'savings_accounts_store'])->name('settings.data-imports.savings-accounts.store'); 
+    Route::post('/settings/data-imports/savings-accounts/store', [ImportController::class, 'savings_accounts_store'])->name('settings.data-imports.savings-accounts.store');
+    Route::get('/settings/data-imports/loans/create', [ImportController::class, 'loans_create'])->name('settings.data-imports.loans.create'); 
+    Route::get('/settings/data-imports/loans/template', [ImportController::class, 'loans_template'])->name('settings.data-imports.loans.template');    
+    Route::post('/settings/data-imports/loans/store', [ImportController::class, 'loans_store'])->name('settings.data-imports.loans.store'); 
 });
 
 //clients
